@@ -11,3 +11,107 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.formContainer {
+  border: 3px solid black;
+  width: 80%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  color: black;
+
+  form {
+    margin: 20px;
+    width: fill;
+  }
+
+  ul.fields {
+      list-style-type: none;
+      width: fill;
+      margin: 0px;
+      padding: 0px;
+
+      li {
+        border: 1px solid black;
+        margin: 0px;
+        padding: 10px;
+      }
+  }
+}
+
+.roster {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: middle;
+  color: black;
+
+  table {
+    border: 2px solid black;
+    width: 80%;
+    border-collapse: collapse;
+    margin: 15px;
+    background: #CCC;
+
+    thead > tr > th {
+      background: #AAA;
+    }
+
+    th:nth-child(even) {
+      border-left: 2px solid black;
+    }
+
+    td {
+      border-left: 2px solid black;
+      border-right: 2px solid black;
+    }
+
+    tr:nth-child(even) {
+      background: #EEE;
+    }
+  }
+  
+
+}
+
+.location {
+  width: 100%;
+  padding: 15px 0px;
+
+  .optionsDropdown {
+    width: 15%;
+  }
+
+  button {
+    box-shadow: 5px 5px 1px rgba(0, 0, 0, .8);
+  }
+
+  .buttonRow {
+    display: flex;
+    flex-direction: row;
+    align-content:end;
+    justify-content: flex-end;
+    gap: 10px;
+    width:80%;
+  }
+
+  .addMember {
+    border: 1px solid black;
+  }
+
+  .clearMembers {
+    border: 1px solid black;
+  }
+}
+
+.nameInput {
+  width: 100%;
+
+  .invalidName {
+    color: #900;
+    font-size: .9em;
+  }
+}
