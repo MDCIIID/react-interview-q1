@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getLocations, isNameValid } from '../mock-api/apis';
-import { messages, formActions, formFields } from '../util/constants';
+import { messages, formActions } from '../util/constants';
 
 export default function NewForm(props) {
     // Using refs for primitives that don't need to be part of state and can be input refs
@@ -16,7 +16,6 @@ export default function NewForm(props) {
     // Loading country select options
     useEffect(() => {
         async function fetchLocations() {
-            console.log('fetching...')
             try {
                 const data = await getLocations();
                 setCountryOptions(data);
@@ -28,11 +27,10 @@ export default function NewForm(props) {
         fetchLocations();
     }, []);
 
-    // Handling click via event delegation to allow for more actions if needed later
+    // Handling click via event delegation switch to allow for more actions if needed later
     function handleClick(e) {
         e.preventDefault();
         const { id } = e.target;
-        console.log('target: ', id);
 
         /*
         Expanded user feedback messages for names and duplicate entries in roster to give
@@ -78,11 +76,10 @@ export default function NewForm(props) {
         document.getElementById('country').value = 'none selected';
     }
 
-    // Handling change with event delegation, which can allow for additional checks if needed
+    // Handling change with event delegation switch, which can allow for additional checks if needed
     async function handleChange(e) {
         e.preventDefault();
         const { id, value } = e.target;
-        console.log(`${id} updating to ${value}`)
 
         const checkForRosterMemberDuplicates = () => {
             const memberIsDuplicate = (member) => {
@@ -121,7 +118,6 @@ export default function NewForm(props) {
             default:
                 break;
         }
-        console.log('name: ', name.current.value, "\nlocation: ", country.current.value)
     }
 
     /*
@@ -186,7 +182,6 @@ export default function NewForm(props) {
                             </thead>
                             <tbody>
                                 {roster != null && roster.map((member, i) => {
-                                    console.log('member:', member);
                                     const { name, country } = member
                                     return (<tr key={i}>
                                         <><td>{name}</td><td>{country}</td></>

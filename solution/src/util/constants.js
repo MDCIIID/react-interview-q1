@@ -10,9 +10,3 @@ export const formActions = {
     addMember: 'addMember',
     clearMembers: 'clearMembers',
 }
-
-export const formFields = {
-    name: 'name',
-    country: 'country',
-    roster: 'roster',
-}
