@@ -1,87 +1,202 @@
-import React, {useState, useEffect, useRef} from 'react';
-import LocationSelect from '../components/LocationSelect'
-import RosterTable from '../components/RosterTable';
+import React, { useState, useEffect, useRef } from 'react';
 import { getLocations, isNameValid } from '../mock-api/apis';
 import { messages, formActions, formFields } from '../util/constants';
 
 export default function NewForm(props) {
+    // Using refs for primitives that don't need to be part of state and can be input refs
     const name = useRef(null);
-    const location = useRef(null);
-    const newRoster = useRef([]);
-    const [roster, setRosterData] = useState([]);
+    const country = useRef(null);
+
+    // Stateful members
+    const [roster, setRoster] = useState([]);
+    const [countryOptions, setCountryOptions] = useState([]);
     const [validName, setValidity] = useState(true);
+    const [error, setError] = useState(null);
 
+    // Loading country select options
+    useEffect(() => {
+        async function fetchLocations() {
+            console.log('fetching...')
+            try {
+                const data = await getLocations();
+                setCountryOptions(data);
+            } catch (error) {
+                setError(error);
+            }
+        }
+
+        fetchLocations();
+    }, []);
+
+    // Handling click via event delegation to allow for more actions if needed later
     function handleClick(e) {
+        e.preventDefault();
         const { id } = e.target;
-        console.log('target: ', name);
+        console.log('target: ', id);
 
+        /*
+        Expanded user feedback messages for names and duplicate entries in roster to give
+        clearer information.
+        */
         switch (id) {
             case formActions.addMember:
-                console.log('clicked to add member!');
-                const newMember = [name.current.value, location.current.value];
-                roster.push(newMember)
+                // Check there is a name entered
+                if (name.current.value == '') {
+                    setError(messages.noName)
+                    return;
+                };
+
+                // Don't allow the addition of an invalid name or roster member
+                if (!validName) {
+                    return;
+                }
+
+                const newMember = {
+                    name: name.current.value,
+                    country: country.current.value
+                }
+
+                setRoster([...roster, newMember]);
+                clearFields();
                 break;
             case formActions.clearMembers:
-                console.log('clearing members!');
-                while (roster.length > 0) {roster.pop()}
+                clearFields();
+                if (roster.length === 0) {
+                    return;
+                }
+                setRoster([]);
                 break;
         }
     }
 
+    // Method to clear entry fields post addition to or clearing of roster
+    function clearFields() {
+        name.current.value = '';
+        country.current.value = '';
+        setError('');
+        setValidity(true);
+        document.getElementById('country').value = 'none selected';
+    }
+
+    // Handling change with event delegation, which can allow for additional checks if needed
     async function handleChange(e) {
+        e.preventDefault();
         const { id, value } = e.target;
-        console.log("change happened");
+        console.log(`${id} updating to ${value}`)
+
+        const checkForRosterMemberDuplicates = () => {
+            const memberIsDuplicate = (member) => {
+                return (
+                    member.name == name.current.value &&
+                    member.country == country.current.value
+                )
+            }
+
+            if (roster.some(memberIsDuplicate)) {
+                setValidity(false);
+                setError(messages.memberDuplicate);
+            } else {
+                setValidity(true);
+            }
+
+        }
 
         switch (id) {
             case 'name':
-                setValidity(await isNameValid(name.current.value));
+                const cName = name.current.value;
+
+                // Instant check for duplicate in ui occurs before async name function
+                checkForRosterMemberDuplicates();
+
+                if (!await isNameValid(cName)) {
+                    setValidity(false);
+                    setError(messages.invalidName);
+                }
+
                 break;
-            case 'location':
-                console.log("location updated");
+            case 'country':
+                // Check for duplicate member on country change too
+                checkForRosterMemberDuplicates();
                 break;
-        }  
-        console.log('name: ', name.current.value, "\nlocation: ", location.current.value)
+            default:
+                break;
+        }
+        console.log('name: ', name.current.value, "\nlocation: ", country.current.value)
     }
 
+    /*
+    Kept all of the form fields in the same file to avoid passing props around could easily 
+    be changed in the future for added complexity
+    */
     return (
-    <div className="formContainer">
-        <form action='/mock-endpoint'>
-            <ul className="fields">
-                <div className="nameInput">
-                    <label htmlFor="name">Name </label>
-                    <input 
-                        type="text"
-                        id="name"
-                        name="nameInput"
-                        ref={name}
-                        key="name"
-                        onChange={handleChange}
-                    />
-                    {!validName && (<div className="invalidName">{messages.nameTaken}</div>)}
-                </div>
-                <div className="location">
-                    <LocationSelect locationRef={location} onChange={handleChange}/>
-                    <div className="buttonRow">
-                        <button
-                            className={formActions.addMember}
-                            id={formActions.addMember}
-                            onClick={handleClick}
+        <div className="formContainer">
+            <form action='/mock-endpoint'>
+                <div className="fields">
+                    <div className="nameInput">
+                            <label htmlFor="name">Name </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="nameInput"
+                                key="name"
+                                className="nameField"
+                                onChange={handleChange}
+                                ref={name}
+                            />
+                    </div>
+                    {!validName && <><div htmlFor="name" className="errorText">{error}</div></>}
+                    <div className="country" key="country">
+                        <label htmlFor="country">Location </label>
+                        <select
+                            id="country"
+                            onChange={handleChange}
+                            ref={country}
                         >
-                        Add
-                        </button>
+                            {/*Adding default option to fall back to on clear/add completion*/}
+                            <option id="option-default" value='none selected'>Select a country</option>
+                            {countryOptions.map((country, i) => {
+                                return <option key={i} value={country} className='select-content'>{country}</option>
+                            })}
 
+                        </select>
+                    </div>
+                    <div className="buttonRow">
                         <button
                             className={formActions.clearMembers}
                             id={formActions.clearMembers}
                             onClick={handleClick}
                         >
-                        Clear
+                            Clear
+                        </button>
+                        <button
+                            className={formActions.addMember}
+                            id={formActions.addMember}
+                            onClick={handleClick}
+                        >
+                            Add
                         </button>
                     </div>
+                    <div className="roster" key="roster">
+                        <table id="roster" name="rosterTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Location </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {roster != null && roster.map((member, i) => {
+                                    console.log('member:', member);
+                                    const { name, country } = member
+                                    return (<tr key={i}>
+                                        <><td>{name}</td><td>{country}</td></>
+                                    </tr>)
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <RosterTable roster={roster} onClick={handleClick} />
-            </ul>
-        </form>
-    </div>
+            </form>
+        </div>
     );
 }

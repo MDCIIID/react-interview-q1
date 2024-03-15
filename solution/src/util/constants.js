@@ -1,5 +1,9 @@
 export const messages = {
-    nameTaken: "this name has already been taken"
+    invalidName: "this name has already been taken",
+    memberDuplicate: "this name is already in the roster",
+    failedCountryFetch: "filed to fetch country list",
+    noName: 'please enter a name to add',
+    noCountry: 'please select a country'
 }
 
 export const formActions = {
@@ -9,6 +13,6 @@ export const formActions = {
 
 export const formFields = {
     name: 'name',
-    location: 'location',
+    country: 'country',
     roster: 'roster',
 }
